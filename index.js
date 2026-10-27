@@ -26,6 +26,7 @@ import { SessionStore } from './lib/chat/session.mjs'
 import { ChatEngine } from './lib/chat/router.mjs'
 import { MemoryStore } from './lib/memory/store.mjs'
 import { MemoryEngine } from './lib/memory/index.mjs'
+import { createVoiceModule } from './lib/voice/index.mjs'
 
 // ⚠️ schemastery 彻底拿不到时这里是 undefined —— 插件照常加载，只是设置页降级
 //    （宁可少一个设置页，也不能因为一个 import 让整条插件不激活）。
@@ -75,6 +76,7 @@ export const Config = !z ? undefined : z.object({
   }),
   voice: z.object({
     sttEnabled: z.boolean().default(true).extra('volatile', true),
+    mode: z.string().default('off').extra('volatile', true),
     tts: z.object({
       provider: z.string().default('off').extra('volatile', true),
       piper: z.object({
@@ -161,6 +163,14 @@ export function apply(ctx, config) {
     reconnectMaxMs: cfg.onebot.reconnectMaxMs,
     logger: logger.child('onebot'),
   })
+  // ── 语音（收：Harness 转写；发：Piper / OpenAI 兼容 TTS）──
+  const voice = createVoiceModule({
+    ctx,
+    cfg,
+    logger: logger.child('voice'),
+    stateDir,
+  })
+
   const chatEngine = new ChatEngine({
     client,
     llm,
@@ -168,6 +178,10 @@ export function apply(ctx, config) {
     cfg: { persona: cfg.persona, owner: cfg.owner },
     logger: logger.child('chat'),
     memory,
+    hooks: {
+      ...voice.hooks,
+      // sticker hook 在 Phase 5 接入
+    },
     commands: {
       // 手动记忆：/记住 主人的生日是6月1日
       记住: async (_event, _peerKey, args) => {
@@ -175,6 +189,7 @@ export function apply(ctx, config) {
         const fact = await memory.addManual(args.join(' '))
         return fact ? `咕噜，记住了：「${fact.text}」` : '这句话好像不用记哦'
       },
+      ...voice.commands,
     },
   })
   chatEngine.attach()

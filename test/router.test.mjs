@@ -240,3 +240,44 @@ test('扩展命令：commands 表里的命令可用，未处理的回默认文�
   assert.equal(llm.calls.length, 0, '命令不进模型')
   t.after(() => engine.dispose())
 })
+
+test('语音消息：stt hook 转写成功 → 转写文本进模型', async (t) => {
+  const hooks = { async stt() { return '今晚吃什么' } }
+  const { client, llm, engine } = makeEngine({ hooks })
+  client.emit({ post_type: 'message', message_type: 'private', message_id: 7, user_id: 100, message: [{ type: 'record', data: { file: 'base64://x' } }], sender: {} })
+  await waitSent(client, 1)
+  assert.equal(llm.calls.length, 1)
+  assert.equal(llm.calls[0][1].content, '今晚吃什么', '转写文本作为 user 消息')
+  assert.equal(client.sent[0].message, '收到：今晚吃什么')
+  t.after(() => engine.dispose())
+})
+
+test('语音消息：stt 失败 → 「听不清」软文案，不进模型', async (t) => {
+  const hooks = { async stt() { throw new Error('转写炸了') } }
+  const { client, llm, engine } = makeEngine({ hooks })
+  client.emit({ post_type: 'message', message_type: 'private', message_id: 8, user_id: 100, message: [{ type: 'record', data: { file: 'base64://x' } }], sender: {} })
+  await waitSent(client, 1)
+  assert.equal(llm.calls.length, 0)
+  assert.match(client.sent[0].message, /没听清/)
+  t.after(() => engine.dispose())
+})
+
+test('语音消息：stt 返回 null 同样走「听不清」文案', async (t) => {
+  const hooks = { async stt() { return null } }
+  const { client, engine } = makeEngine({ hooks })
+  client.emit({ post_type: 'message', message_type: 'private', message_id: 9, user_id: 100, message: [{ type: 'record', data: { file: 'base64://x' } }], sender: {} })
+  await waitSent(client, 1)
+  assert.match(client.sent[0].message, /没听清/)
+  t.after(() => engine.dispose())
+})
+
+test('voice hook：返回的 record 以 record 段随回复发出', async (t) => {
+  const hooks = { async voice() { return 'base64://fish.wav' } }
+  const { client, engine } = makeEngine({ hooks })
+  client.emit(privateMsg(100, '说句话'))
+  await waitSent(client, 1)
+  const sent = client.sent[0].message
+  assert.ok(Array.isArray(sent), '带 record 的消息应是 CQ 段数组')
+  assert.ok(sent.some((s) => s.type === 'record' && s.data.file === 'base64://fish.wav'))
+  t.after(() => engine.dispose())
+})

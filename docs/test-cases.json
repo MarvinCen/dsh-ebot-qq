@@ -83,6 +83,21 @@
     ["TC-MEM-017", "记忆引擎", "提取限流", "extractEvery=3", "连发 3 轮 remember", "前 2 轮不调 LLM，第 3 轮提取并写入存储；autoExtract 关时永不提取", ""],
     ["TC-MEM-018", "记忆引擎", "手动记忆", "无", "/记住 xxx 命令", "存储新增一条并回复确认文案；空白不记", ""],
     ["TC-MEM-019", "记忆引擎", "提取失败不炸", "提取 LLM 抛错", "remember", "不抛异常，聊天主流程不受影响", ""],
-    ["TC-MEM-020", "记忆引擎", "多会话独立计数", "两个 peer", "各发 1 轮 remember（extractEvery=2）", "各自计数，都未触发提取", ""]
+    ["TC-MEM-020", "记忆引擎", "多会话独立计数", "两个 peer", "各发 1 轮 remember（extractEvery=2）", "各自计数，都未触发提取", ""],
+    ["TC-VOI-001", "收语音", "base64 record 解析", "record 段 file=base64://…", "resolveRecordBytes", "返回正确字节；空 base64 报 EBOT-STT-BAD-RECORD", "EBOT-STT-BAD-RECORD"],
+    ["TC-VOI-002", "收语音", "URL 下载语音", "NapCat 提供 http file 地址", "resolveRecordBytes", "下载成功返回字节；404 报 EBOT-STT-HTTP-404；超时报 EBOT-STT-TIMEOUT", "EBOT-STT-HTTP-404 / EBOT-STT-TIMEOUT"],
+    ["TC-VOI-003", "收语音", "本地文件来源", "file:// 前缀或裸路径", "resolveRecordBytes", "读文件返回字节；文件不存在报 EBOT-STT-FILE", "EBOT-STT-FILE"],
+    ["TC-VOI-004", "收语音", "转写服务调用", "speechToText 服务可用", "sttTranscribe(ctx, audio)", "resolve({audio}) → transcribe → 返回修剪后的文本", ""],
+    ["TC-VOI-005", "收语音", "转写失败路径", "结果为空 / 服务缺失", "sttTranscribe", "空结果报 EBOT-STT-EMPTY；服务拿不到报 EBOT-STT-UNAVAILABLE；服务抛错原样上抛", "EBOT-STT-EMPTY / EBOT-STT-UNAVAILABLE"],
+    ["TC-VOI-006", "发语音", "文本截断", "合成前处理", "truncateForTts", "<=150 字原样；长文本按句号边界截断；无句号硬截", ""],
+    ["TC-VOI-007", "发语音", "Piper 本地合成", "piper 可执行文件+模型", "ttsPiper", "stdin 文本、output_file 出 wav，返回 {data, format:wav}", ""],
+    ["TC-VOI-008", "发语音", "Piper 失败路径", "模型缺失/二进制缺失/非零退出/无输出", "ttsPiper", "分别报 EBOT-TTS-PIPER-NO-MODEL / -SPAWN / -FAILED / -OUTPUT", "EBOT-TTS-PIPER-*"],
+    ["TC-VOI-009", "发语音", "OpenAI 兼容合成", "云端 TTS 可用", "ttsOpenai", "POST /audio/speech 载荷正确，返回字节与格式；400 报 EBOT-TTS-HTTP-400；空响应报 -EMPTY；网络失败报 -NETWORK", "EBOT-TTS-HTTP-400 / -EMPTY / -NETWORK"],
+    ["TC-VOI-010", "发语音", "引擎路由", "provider=off / 文本为空", "synthText", "off 报 EBOT-TTS-PROVIDER-OFF；空文本报 EBOT-TTS-EMPTY", "EBOT-TTS-PROVIDER-OFF / EBOT-TTS-EMPTY"],
+    ["TC-VOI-011", "语音集成", "收语音闭环", "sttEnabled 且转写可用", "发一条语音消息", "转写文本作为 user 消息进模型，回复正常送达", ""],
+    ["TC-VOI-012", "语音集成", "转写失败软兜底", "转写 hook 抛错/返回 null", "发语音消息", "回「没听清」软文案，不进模型、不暴露错误", ""],
+    ["TC-VOI-013", "语音集成", "回复自动配音", "voice.mode=on 且 TTS 可用", "发文字消息", "回复为 CQ 段数组，含 record 段（base64:// 音频）", ""],
+    ["TC-VOI-014", "语音集成", "smart 模式", "voice.mode=smart", "回复 >80 字", "不配音（返回纯文本）", ""],
+    ["TC-VOI-015", "语音命令", "/语音 命令", "TTS 各状态", "/语音（空参/未启用/成功/失败）", "空参给用法提示；未启用给设置引导；成功发 record 段；失败回软文案", ""]
   ]
 }
