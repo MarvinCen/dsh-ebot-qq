@@ -1,2 +1,9 @@
 AGENTS.md
+node_modules/
+.pnpm-store/
+*.log
+logs/
+out/
+.DS_Store
+.venv/
 

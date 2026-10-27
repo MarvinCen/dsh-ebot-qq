@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- 大肥鱼：圆滚滚的鱼身 + 尾巴 + 背鳍 + 气泡（原创图标，随插件分发） -->
+  <path d="M15 22 q-4 -3 -6 0 q2 3 6 0" fill="#4f9adf"/>
+  <circle cx="29" cy="33" r="16.5" fill="#5aa9e6"/>
+  <path d="M43 33 l13 -8.5 v17 z" fill="#5aa9e6"/>
+  <path d="M25 46 q-2 4 2 4.5 q3 .5 3 -2.5" fill="#5aa9e6"/>
+  <circle cx="24" cy="30" r="3.4" fill="#ffffff"/>
+  <circle cx="25" cy="30" r="1.7" fill="#22333b"/>
+  <path d="M19 38.5 q4.5 4 9 0" stroke="#22333b" stroke-width="1.7" fill="none" stroke-linecap="round"/>
+  <circle cx="43" cy="16" r="2.4" fill="none" stroke="#5aa9e6" stroke-width="1.5"/>
+  <circle cx="49" cy="9" r="1.7" fill="none" stroke="#8ec8f5" stroke-width="1.3"/>
+</svg>
