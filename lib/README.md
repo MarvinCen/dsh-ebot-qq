@@ -13,7 +13,7 @@
 | Phase | 模块目录 | 状态 |
 |---|---|---|
 | 0 | `logger` / `config` / `state`（本目录） | ✅ 已完成 |
-| 1 | `onebot/`（OneBot 11 连接） | ⏳ 待做 |
+| 1 | `onebot/`（OneBot 11 连接） | ✅ 已完成 |
 | 2 | `chat/`（LLM / 人设 / 会话 / 路由） | ⏳ 待做 |
 | 3 | `memory/`（短期 + 长期 + 向量检索） | ⏳ 待做 |
 | 4 | `voice/`（STT 转写 + TTS 双引擎） | ⏳ 待做 |

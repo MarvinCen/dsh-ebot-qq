@@ -21,6 +21,20 @@
     ["TC-CFG-010", "配置", "数值越界", "temperature=2.5 / -0.1；minScore>1", "启动时配置校验", "对应路径报错，提示合法范围", "ERR-CFG-RANGE"],
     ["TC-CFG-011", "配置", "类型错误", "maxTokens='abc'；owner.qq=1.5", "启动时配置校验", "对应路径报错", "ERR-CFG-TYPE"],
     ["TC-CFG-012", "配置", "校验失败不阻断启动", "若干字段非法", "插件启动", "插件正常加载；错误清单逐条打日志，字段路径可见", ""],
-    ["TC-CFG-013", "配置", "schema 与运行期默认值契约", "schemastery 可用", "Config({}) 实例化并解包 volatile", "结果与 DEFAULT_CONFIG 完全一致；类型错误被 schema 拒绝、格式问题留给运行期校验", ""]
+    ["TC-CFG-013", "配置", "schema 与运行期默认值契约", "schemastery 可用", "Config({}) 实例化并解包 volatile", "结果与 DEFAULT_CONFIG 完全一致；类型错误被 schema 拒绝、格式问题留给运行期校验", ""],
+    ["TC-OB-001", "OneBot", "连接建立", "NapCat 正向 WS 可用", "start()", "状态机 disconnected→connecting→connected；生命周期事件不报错", ""],
+    ["TC-OB-002", "OneBot", "私聊消息归一化", "已连接", "收到 private message 包", "事件 {type:message, subType:private, userId, text, senderName} 各字段正确", ""],
+    ["TC-OB-003", "OneBot", "群消息归一化", "已连接", "收到 group message 包", "groupId/群名片正确；表情等非文本段原样保留在 segments", ""],
+    ["TC-OB-004", "OneBot", "API 调用成功", "已连接", "callApi(send_private_msg)", "resolve 为响应 data 字段（如 message_id）", ""],
+    ["TC-OB-005", "OneBot", "API 调用失败", "已连接", "服务端回 status=failed retcode=1403", "reject 带 EBOT-API-1403 与错误文案", "EBOT-API-1403"],
+    ["TC-OB-006", "OneBot", "API 超时", "服务器收到请求但不回包", "callApi（超时阈值 80ms）", "reject EBOT-API-TIMEOUT", "EBOT-API-TIMEOUT"],
+    ["TC-OB-007", "OneBot", "未连接时调用 API", "客户端从未 start()", "callApi", "立即 reject EBOT-NOT-CONNECTED，不傻等", "EBOT-NOT-CONNECTED"],
+    ["TC-OB-008", "OneBot", "断线自动重连", "连接被服务端主动断开", "等待重连", "状态经 reconnecting 回到 connected；退避间隔非降且不低于基数", ""],
+    ["TC-OB-009", "OneBot", "断线时在途调用", "有 API 在途未回包时断线", "服务端掐断连接", "在途调用立即 reject EBOT-NOT-CONNECTED", "EBOT-NOT-CONNECTED"],
+    ["TC-OB-010", "OneBot", "dispose 终态", "任意运行状态", "dispose()", "状态=disposed；不再重连；新调用 reject EBOT-DISPOSED", "EBOT-DISPOSED"],
+    ["TC-OB-011", "OneBot", "脏数据容错", "连接收到非 JSON 包", "继续收发消息", "坏包被忽略记日志；连接不崩；后续正常事件照常处理", ""],
+    ["TC-OB-012", "OneBot", "处理器异常隔离", "某个事件处理器抛异常", "继续分发事件", "其他处理器照常收到事件；连接不断", ""],
+    ["TC-OB-013", "OneBot", "access_token 传递", "配置 onebot.token", "建立连接", "NapCat 侧收到的 URL 带 access_token=<token>", ""],
+    ["TC-OB-014", "OneBot", "回复消息构造契约", "无", "buildMessage(文本/对象/数组/数字)", "CQ 段输出符合契约；非法输入抛 EBOT-BAD-MESSAGE", "EBOT-BAD-MESSAGE"]
   ]
 }
