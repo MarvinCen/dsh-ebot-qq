@@ -20,6 +20,10 @@ import { readFileSync } from 'node:fs'
 import { stateDirOf } from './lib/state.mjs'
 import { createLogger } from './lib/logger.mjs'
 import { resolveConfig } from './lib/config.mjs'
+import { OneBotClient } from './lib/onebot/client.mjs'
+import { LlmClient } from './lib/chat/llm.mjs'
+import { SessionStore } from './lib/chat/session.mjs'
+import { ChatEngine } from './lib/chat/router.mjs'
 
 // ⚠️ schemastery 彻底拿不到时这里是 undefined —— 插件照常加载，只是设置页降级
 //    （宁可少一个设置页，也不能因为一个 import 让整条插件不激活）。
@@ -112,7 +116,8 @@ export const Config = !z ? undefined : z.object({
 
 /**
  * 插件入口。各模块在后续 Phase 里逐个装配进来：
- *   logger（本 Phase）→ onebot → chat → memory → voice → sticker → proactive → bili
+ *   logger（Phase 0）→ onebot（Phase 1）→ chat（Phase 2）→
+ *   memory → voice → sticker → proactive → bili
  */
 export function apply(ctx, config) {
   const { config: cfg, errors } = resolveConfig(config)
@@ -125,9 +130,43 @@ export function apply(ctx, config) {
   logger.info(`大肥鱼 QQ 机器人 v${PKG_VERSION} 已挂载（家=${stateDir}）`)
   for (const e of errors) logger.warn(`配置校验未通过：${e.path} —— ${e.message}`)
   if (!Config) logger.warn('schemastery 不可用：设置页降级，插件功能不受影响')
+  if (!cfg.llm.apiKey) logger.warn('llm.apiKey 未配置：聊天会失败，请在设置页填写')
 
-  // 本 Phase 只做启动骨架；各功能模块随后逐个接入（见 lib/README.md 的装配清单）。
-  ctx.effect(() => () => logger.info('大肥鱼 QQ 机器人已卸载'), 'ebot-qq: 卸载日志')
+  // ── 会话（短期记忆）与 LLM 客户端 ──
+  const sessions = new SessionStore({ shortTermTurns: cfg.memory.shortTermTurns })
+  const llm = new LlmClient({
+    baseUrl: cfg.llm.baseUrl,
+    apiKey: cfg.llm.apiKey,
+    model: cfg.llm.model,
+    timeoutMs: cfg.llm.timeoutMs,
+    logger: logger.child('llm'),
+  })
+
+  // ── OneBot 连接 + 聊天引擎（后续 Phase 的 memory/voice/sticker hooks 从这里插）──
+  const client = new OneBotClient({
+    url: cfg.onebot.url,
+    token: cfg.onebot.token,
+    apiTimeoutMs: cfg.onebot.apiTimeoutMs,
+    reconnectBaseMs: cfg.onebot.reconnectBaseMs,
+    reconnectMaxMs: cfg.onebot.reconnectMaxMs,
+    logger: logger.child('onebot'),
+  })
+  const chatEngine = new ChatEngine({
+    client,
+    llm,
+    sessions,
+    cfg: { persona: cfg.persona, owner: cfg.owner },
+    logger: logger.child('chat'),
+  })
+  chatEngine.attach()
+  client.start()
+
+  // 收摊顺序：先摘聊天引擎（中断在途生成），再断连接
+  ctx.effect(() => () => {
+    chatEngine.dispose()
+    client.dispose()
+    logger.info('大肥鱼 QQ 机器人已卸载')
+  }, 'ebot-qq: 卸载收摊')
 }
 
 /** 版本号（package.json 的 version），避免在代码里再写一遍。 */
