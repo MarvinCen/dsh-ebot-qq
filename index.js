@@ -27,6 +27,7 @@ import { ChatEngine } from './lib/chat/router.mjs'
 import { MemoryStore } from './lib/memory/store.mjs'
 import { MemoryEngine } from './lib/memory/index.mjs'
 import { createVoiceModule } from './lib/voice/index.mjs'
+import { createStickerModule } from './lib/sticker/index.mjs'
 
 // ⚠️ schemastery 彻底拿不到时这里是 undefined —— 插件照常加载，只是设置页降级
 //    （宁可少一个设置页，也不能因为一个 import 让整条插件不激活）。
@@ -96,6 +97,7 @@ export const Config = !z ? undefined : z.object({
   sticker: z.object({
     enabled: z.boolean().default(true).extra('volatile', true),
     dir: z.string().default('').extra('volatile', true),
+    rate: z.number().default(0.2).extra('volatile', true),
   }),
   proactive: z.object({
     enabled: z.boolean().default(true).extra('volatile', true),
@@ -171,6 +173,13 @@ export function apply(ctx, config) {
     stateDir,
   })
 
+  // ── 表情包（本地目录 + 语义标签）──
+  const sticker = createStickerModule({
+    cfg,
+    logger: logger.child('sticker'),
+    stateDir,
+  })
+
   const chatEngine = new ChatEngine({
     client,
     llm,
@@ -180,7 +189,7 @@ export function apply(ctx, config) {
     memory,
     hooks: {
       ...voice.hooks,
-      // sticker hook 在 Phase 5 接入
+      sticker: sticker.hooks.sticker,
     },
     commands: {
       // 手动记忆：/记住 主人的生日是6月1日
@@ -190,6 +199,7 @@ export function apply(ctx, config) {
         return fact ? `咕噜，记住了：「${fact.text}」` : '这句话好像不用记哦'
       },
       ...voice.commands,
+      ...sticker.commands,
     },
   })
   chatEngine.attach()
