@@ -271,9 +271,10 @@ window.__ModuleLoader__.load({
     return {
       inject: ['slots'],
       apply(ctx) {
-        ctx.slots.inject('settings.plugins.tab', () => ctx.slots.register(
-          { name: 'settings.plugins.tab', id: 'ebot-qq', order: 20, label: '大肥鱼' },
-          Panel,
+        // 独立设置页入口：挂「设置」左侧导航，与「刷B站」同级、排它下面
+        ctx.slots.inject('settings.section', () => ctx.slots.register(
+          { name: 'settings.section', id: 'ebot-qq', order: 31, label: '大肥鱼' },
+          () => h(Panel),
         ))
       },
     }
