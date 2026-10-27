@@ -28,6 +28,7 @@ import { MemoryStore } from './lib/memory/store.mjs'
 import { MemoryEngine } from './lib/memory/index.mjs'
 import { createVoiceModule } from './lib/voice/index.mjs'
 import { createStickerModule } from './lib/sticker/index.mjs'
+import { createProactiveModule } from './lib/proactive/index.mjs'
 
 // ⚠️ schemastery 彻底拿不到时这里是 undefined —— 插件照常加载，只是设置页降级
 //    （宁可少一个设置页，也不能因为一个 import 让整条插件不激活）。
@@ -105,6 +106,7 @@ export const Config = !z ? undefined : z.object({
     windowEnd: z.string().default('23:00').extra('volatile', true),
     minIntervalHours: z.number().default(2).extra('volatile', true),
     maxIntervalHours: z.number().default(6).extra('volatile', true),
+    cooldownMinutes: z.natural().default(30).extra('volatile', true),
     topics: z.array(z.string()).default([]).extra('volatile', true),
   }),
   bili: z.object({
@@ -205,9 +207,18 @@ export function apply(ctx, config) {
   chatEngine.attach()
   client.start()
 
+  // ── 主动聊天（随机定时 + 冷却 + 记忆驱动话题）──
+  const proactive = createProactiveModule({
+    cfg,
+    client,
+    memory,
+    logger: logger.child('proactive'),
+  })
+
   // 收摊顺序：先摘聊天引擎（中断在途生成），再断连接
   ctx.effect(() => () => {
     chatEngine.dispose()
+    proactive.dispose()
     client.dispose()
     logger.info('大肥鱼 QQ 机器人已卸载')
   }, 'ebot-qq: 卸载收摊')

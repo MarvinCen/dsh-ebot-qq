@@ -18,7 +18,7 @@
 | 3 | `memory/`（短期 + 长期 + 向量检索） | ✅ 已完成 |
 | 4 | `voice/`（STT 转写 + TTS 双引擎） | ✅ 已完成 |
 | 5 | `sticker/`（表情包索引与匹配） | ✅ 已完成 |
-| 6 | `proactive/`（主动聊天调度） | ⏳ 待做 |
+| 6 | `proactive/`（主动聊天调度） | ✅ 已完成 |
 | 7 | `bili/`（复用 dsh-bili-scroll 本地 HTTP API） | ⏳ 待做 |
 
 每个业务模块目录下都会有自己的 README.md。
