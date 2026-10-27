@@ -29,6 +29,7 @@ import { MemoryEngine } from './lib/memory/index.mjs'
 import { createVoiceModule } from './lib/voice/index.mjs'
 import { createStickerModule } from './lib/sticker/index.mjs'
 import { createProactiveModule } from './lib/proactive/index.mjs'
+import { createBiliModule } from './lib/bili/index.mjs'
 
 // ⚠️ schemastery 彻底拿不到时这里是 undefined —— 插件照常加载，只是设置页降级
 //    （宁可少一个设置页，也不能因为一个 import 让整条插件不激活）。
@@ -115,6 +116,7 @@ export const Config = !z ? undefined : z.object({
     autoComment: z.boolean().default(true).extra('volatile', true),
     notifyQq: z.boolean().default(true).extra('volatile', true),
     reportToQq: z.string().default('summary').extra('volatile', true),
+    pollMinutes: z.natural().default(5).extra('volatile', true),
   }),
   log: z.object({
     level: z.string().default('info').extra('volatile', true),
@@ -182,6 +184,15 @@ export function apply(ctx, config) {
     stateDir,
   })
 
+  // ── B站 联动（复用 dsh-bili-scroll：同步评论@配置 + 轮询日报发 QQ 通知）──
+  const bili = createBiliModule({
+    ctx,
+    cfg,
+    client,
+    ourStateDir: stateDir,
+    logger: logger.child('bili'),
+  })
+
   const chatEngine = new ChatEngine({
     client,
     llm,
@@ -202,6 +213,15 @@ export function apply(ctx, config) {
       },
       ...voice.commands,
       ...sticker.commands,
+      // 立刻刷一轮 B站：bili-scroll 的定时器自己会按峰谷刷，这里做一次手动同步引导
+      刷视频: async () => {
+        if (!cfg.bili.enabled) return 'B站 联动没开：去设置页把 B站 → 启用 打开'
+        const r = await bili.syncNow()
+        if (r.missing) return '鱼鱼没找到「刷B站」插件（dsh-bili-scroll），装好它并扫码登录后，它每天会自己刷空友爱看；刷完鱼鱼会把战报发到 QQ'
+        return r.synced
+          ? '配置已同步 ✓ 刷B站每天按峰谷时段自动跑（可在「刷B站」设置页点「现在跑一轮」立即刷），刷完鱼鱼会主动把战报发过来'
+          : `同步结果：${r.reason ?? r.error ?? '无变化'}。刷B站每天按峰谷时段自动跑，刷完鱼鱼会把战报发到 QQ`
+      },
     },
   })
   chatEngine.attach()
@@ -214,11 +234,13 @@ export function apply(ctx, config) {
     memory,
     logger: logger.child('proactive'),
   })
+  bili.start()
 
   // 收摊顺序：先摘聊天引擎（中断在途生成），再断连接
   ctx.effect(() => () => {
     chatEngine.dispose()
     proactive.dispose()
+    bili.dispose()
     client.dispose()
     logger.info('大肥鱼 QQ 机器人已卸载')
   }, 'ebot-qq: 卸载收摊')

@@ -14,7 +14,7 @@ DSH 插件（host bundle），QQ 侧通过 **OneBot 11（NapCat）** 接入，
 | 2 | 发表情包 | 本地表情包目录 + 语义标签，按情绪/关键词选图 | ✅ 已完成 |
 | 3 | 发语音 | TTS 双引擎：Piper（本地离线）/ OpenAI 兼容 audio API（云端），用户按需选择 | ✅ 已完成 |
 | 4 | 收语音 | 复用 Harness `speechToText` 转写服务，转成文字再对话 | ✅ 已完成 |
-| 5 | 刷空友爱看 + 评论@人 | 复用 `dsh-bili-scroll` 的本地 HTTP API，结果通过 QQ 通知 | ⏳ 开发中 |
+| 5 | 刷空友爱看 + 评论@人 | 复用 `dsh-bili-scroll`：configEditor 同步@昵称，轮询日报发 QQ 通知 | ✅ 已完成 |
 | 6 | 记忆系统 | 没配 embedding：短期记忆（最近对话）；配了 embedding：升级为向量检索长期记忆 | ✅ 已完成 |
 | — | 日志 | 分模块日志文件 + 轮转（AGENTS.md 规则 13） | ✅ 已完成 |
 | — | 配置校验 | 默认值合并 + 全字段校验，错误精确到字段路径 | ✅ 已完成 |

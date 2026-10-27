@@ -116,6 +116,16 @@
     ["TC-PRO-007", "主动聊天", "记忆驱动", "recentFacts 有事实且 rng=0", "触发调度", "话题内容来自记忆钩子", ""],
     ["TC-PRO-008", "主动聊天", "失败恢复", "send 抛异常", "多次触发", "不崩、继续调度（attempts 增长、fireCount 不增长）", ""],
     ["TC-PRO-009", "主动聊天", "dispose 终态", "运行中", "dispose()", "不再触发新调度", ""],
-    ["TC-PRO-010", "主动聊天", "主人活动冷却", "装配模块监听事件", "主人/陌生人发消息", "主人消息刷新冷却起点；陌生人消息不影响", ""]
+    ["TC-PRO-010", "主动聊天", "主人活动冷却", "装配模块监听事件", "主人/陌生人发消息", "主人消息刷新冷却起点；陌生人消息不影响", ""],
+    ["TC-BIL-001", "B站联动", "条目查找", "configEditor 含 bili-scroll 条目", "findBiliEntry", "按 id 或 name 找到；缺失/空返回 undefined", ""],
+    ["TC-BIL-002", "B站联动", "配置同步", "mentionName 有值", "syncBiliConfig", "首次 edit 写入 {mentionName, autoComment}；重复调用被变化检测挡住；空昵称不写；edit 抛错返回 ok:false", ""],
+    ["TC-BIL-003", "B站联动", "日报读取", "报告文件存在/缺失", "readReport", "存在返回文本与 mtime；缺失返回 exists:false 不抛错", ""],
+    ["TC-BIL-004", "B站联动", "内容签名", "两段文本", "signature", "内容变签名变；同内容稳定；空内容空串", ""],
+    ["TC-BIL-005", "B站联动", "摘要解析", "### BV 块报告", "extractSummary", "提取 {bv,title,url}；加粗标题优先，否则块首行；无 BV 返回 []", ""],
+    ["TC-BIL-006", "B站联动", "轮询通知", "报告出现后 pollNow", "pollNow×2", "第一次通知；内容没变第二次不通知（unchanged）", ""],
+    ["TC-BIL-007", "B站联动", "报告追加再通知", "通知过一轮后报告追加新 BV", "pollNow", "再次通知且包含新条目", ""],
+    ["TC-BIL-008", "B站联动", "通知形态", "reportToQq=summary/full/off", "pollNow", "summary 只发摘要；full 含报告正文；off 不通知", ""],
+    ["TC-BIL-009", "B站联动", "开关拦截", "enabled=false / notifyQq=false", "pollNow / syncNow", "不通知、不同步", ""],
+    ["TC-BIL-010", "B站联动", "定时器生命周期", "start 后 dispose", "start/pollNow/dispose", "定时器创建；dispose 后置空不再轮询", ""]
   ]
 }
