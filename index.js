@@ -41,6 +41,10 @@ import { registerUiApi } from './lib/ui-api.mjs'
 let z
 try { z = (await import('@deepseek-ai/schemastery')).default } catch { /* 设置页降级 */ }
 
+// 依赖注入：webServer 挂设置面板路由；settings 走官方配置读写（bili-scroll 同款注入）。
+// 可选服务（speechToText / configEditor / connection）一律用 ctx.get 取，不写进 inject。
+export const inject = ['webServer', 'settings']
+
 export const Config = !z ? undefined : z.object({
   onebot: z.object({
     url: z.string().default('ws://127.0.0.1:3001').extra('volatile', true),
