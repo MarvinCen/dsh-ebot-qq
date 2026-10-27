@@ -19,7 +19,7 @@ import { join } from 'node:path'
 import { readFileSync } from 'node:fs'
 import { stateDirOf } from './lib/state.mjs'
 import { createLogger } from './lib/logger.mjs'
-import { resolveConfig } from './lib/config.mjs'
+import { resolveConfig, plainConfig } from './lib/config.mjs'
 import { OneBotClient } from './lib/onebot/client.mjs'
 import { LlmClient } from './lib/chat/llm.mjs'
 import { SessionStore } from './lib/chat/session.mjs'
@@ -130,7 +130,9 @@ export const Config = !z ? undefined : z.object({
  *   memory → voice → sticker → proactive → bili
  */
 export function apply(ctx, config) {
-  const { config: cfg, errors } = resolveConfig(config)
+  // ⚠️ cordis 传来的 config 里 volatile 字段是 cosmokit 包装对象，必须先解包
+  //    （实测不解包时 onebot.url 会变成 "[object Object]" 导致连接失败）
+  const { config: cfg, errors } = resolveConfig(plainConfig(config))
   const stateDir = stateDirOf(ctx)
   const logger = createLogger({
     dir: cfg.log.dir || join(stateDir, 'logs'),

@@ -8,7 +8,7 @@
  */
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { DEFAULT_CONFIG } from '../lib/config.mjs'
+import { DEFAULT_CONFIG, plainConfig } from '../lib/config.mjs'
 import { Config } from '../index.js'
 
 /**
@@ -30,6 +30,15 @@ function plain(v) {
 test('契约：schema 默认值实例 === DEFAULT_CONFIG', () => {
   assert.ok(Config, 'schemastery 可用时 Config 必须导出（否则设置页降级未被测试覆盖）')
   assert.deepEqual(plain(Config({})), DEFAULT_CONFIG)
+})
+
+test('契约：plainConfig 能解开 cordis 传来的 volatile 包装', () => {
+  // 模拟真实运行环境：apply 收到的 config 里 volatile 字段是 cosmokit 包装对象
+  const instanced = Config({})
+  assert.deepEqual(plainConfig(instanced), DEFAULT_CONFIG, '解包后应与默认配置一致')
+  assert.equal(plainConfig(42), 42)
+  assert.equal(plainConfig(null), null)
+  assert.deepEqual(plainConfig({ a: { b: 1 } }), { a: { b: 1 } })
 })
 
 test('契约：schema 管类型和默认值，严格校验在 config.mjs（分层设计）', () => {
