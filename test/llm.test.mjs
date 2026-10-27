@@ -67,12 +67,9 @@ test('超时：报 EBOT-LLM-TIMEOUT', async (t) => {
 })
 
 test('网络失败：连不上的地址报 EBOT-LLM-NETWORK', async () => {
-  // 起一个立刻关闭的 server 拿到一个必然拒绝连接的端口
-  const dead = createServer()
-  await new Promise((r) => dead.listen(0, '127.0.0.1', r))
-  const port = dead.address().port
-  await new Promise((r) => dead.close(r))
-  await assert.rejects(client(`http://127.0.0.1:${port}`, { retries: 0 }).chatComplete({ messages: [] }), (e) => e.code === 'EBOT-LLM-NETWORK')
+  // 用 127.0.0.1:1（保留端口，无人监听，连接必然被拒）——
+  // 不自己开关服务器，避免与其他并行测试抢用临时端口（真实踩过的竞态）。
+  await assert.rejects(client('http://127.0.0.1:1', { retries: 0 }).chatComplete({ messages: [] }), (e) => e.code === 'EBOT-LLM-NETWORK')
 })
 
 test('空响应：content 与 reasoning 都为空报 EBOT-LLM-EMPTY', async (t) => {

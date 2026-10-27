@@ -24,6 +24,8 @@ import { OneBotClient } from './lib/onebot/client.mjs'
 import { LlmClient } from './lib/chat/llm.mjs'
 import { SessionStore } from './lib/chat/session.mjs'
 import { ChatEngine } from './lib/chat/router.mjs'
+import { MemoryStore } from './lib/memory/store.mjs'
+import { MemoryEngine } from './lib/memory/index.mjs'
 
 // ⚠️ schemastery 彻底拿不到时这里是 undefined —— 插件照常加载，只是设置页降级
 //    （宁可少一个设置页，也不能因为一个 import 让整条插件不激活）。
@@ -142,6 +144,14 @@ export function apply(ctx, config) {
     logger: logger.child('llm'),
   })
 
+  // ── 长期记忆（无 embedding 走关键词检索；配齐三件套升级为向量检索）──
+  const memory = new MemoryEngine({
+    store: new MemoryStore({ file: join(stateDir, 'memory', 'facts.json'), maxFacts: cfg.memory.maxFacts }),
+    llm,
+    cfg: { longTerm: cfg.memory.longTerm, autoExtract: cfg.memory.autoExtract, embedding: cfg.memory.embedding },
+    logger: logger.child('memory'),
+  })
+
   // ── OneBot 连接 + 聊天引擎（后续 Phase 的 memory/voice/sticker hooks 从这里插）──
   const client = new OneBotClient({
     url: cfg.onebot.url,
@@ -157,6 +167,15 @@ export function apply(ctx, config) {
     sessions,
     cfg: { persona: cfg.persona, owner: cfg.owner },
     logger: logger.child('chat'),
+    memory,
+    commands: {
+      // 手动记忆：/记住 主人的生日是6月1日
+      记住: async (_event, _peerKey, args) => {
+        if (!args.length) return '鱼鱼要记住什么呀？'
+        const fact = await memory.addManual(args.join(' '))
+        return fact ? `咕噜，记住了：「${fact.text}」` : '这句话好像不用记哦'
+      },
+    },
   })
   chatEngine.attach()
   client.start()

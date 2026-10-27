@@ -224,3 +224,19 @@ test('记忆接口：回复前检索、回复后回写', async (t) => {
   assert.deepEqual(calls.remember[0], { peerKey: 'private:100', userText: '今天喝什么', replyText: '收到：今天喝什么' })
   t.after(() => engine.dispose())
 })
+
+test('扩展命令：commands 表里的命令可用，未处理的回默认文案', async (t) => {
+  const { client, llm, engine } = makeEngine({ cfg: { owner: { qq: 0, groups: [] } } })
+  engine.commands['记住'] = async (_event, _peerKey, args) => {
+    if (!args.length) return '鱼鱼要记住什么呀？'
+    return `已记住：${args.join(' ')}`
+  }
+  client.emit(privateMsg(100, '/记住 主人的生日是6月1日'))
+  await waitSent(client, 1)
+  assert.equal(client.sent[0].message, '已记住：主人的生日是6月1日')
+  client.emit(privateMsg(100, '/不存在'))
+  await waitSent(client, 2)
+  assert.ok(client.sent[1].message.includes('/帮助'))
+  assert.equal(llm.calls.length, 0, '命令不进模型')
+  t.after(() => engine.dispose())
+})
