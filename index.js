@@ -30,6 +30,7 @@ import { createVoiceModule } from './lib/voice/index.mjs'
 import { createStickerModule } from './lib/sticker/index.mjs'
 import { createProactiveModule } from './lib/proactive/index.mjs'
 import { createBiliModule } from './lib/bili/index.mjs'
+import { registerUiApi } from './lib/ui-api.mjs'
 
 // ⚠️ schemastery 彻底拿不到时这里是 undefined —— 插件照常加载，只是设置页降级
 //    （宁可少一个设置页，也不能因为一个 import 让整条插件不激活）。
@@ -185,6 +186,9 @@ export function apply(ctx, config) {
     logger: logger.child('sticker'),
     stateDir,
   })
+
+  // ── 设置面板后端（/api/ebot-qq/config：读 settings.describe / 写 settings.update）──
+  registerUiApi(ctx, cfg, logger.child('ui-api'))
 
   // ── B站 联动（复用 dsh-bili-scroll：同步评论@配置 + 轮询日报发 QQ 通知）──
   const bili = createBiliModule({

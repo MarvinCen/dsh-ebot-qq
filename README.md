@@ -24,12 +24,13 @@ DSH 插件（host bundle）。QQ 侧通过 **OneBot 11（NapCat）** 接入，
 2. **装 NapCat**（QQ 协议端，一次性）：
    - 下载并登录 [NapCat](https://github.com/NapNeko/NapCatQQ)（用它自己的 QQ 号登录，需在 WebUi 里配置）；
    - 网络配置里开启 **WebSocket 服务器**（正向 WS，默认 `ws://127.0.0.1:3001`），可选设 access_token；
-   - 把地址与 token 填进本插件设置页「OneBot」。
-3. **模型**：设置页「LLM」填 baseUrl + API Key + 模型名（如 DeepSeek：`https://api.deepseek.com/v1`）。
-4. **主人 QQ**：设置页「主人」填你的 QQ 号（只回你；群聊需加白名单群号）。
-5. **B站**：进「刷B站」设置页 → 装主依赖 + 扫码登录（选「记住我」）；本插件设置页「B站」填评论要 @ 的昵称。
-6. **表情包**：往设置页「表情包 → 目录」里放图（按情绪建子文件夹效果最好，可选 tags.json）。
-7. **语音**：发语音默认开（走 Harness 转写）；回语音选 TTS 引擎（Piper 需下载模型，见 `lib/voice/README.md`）。
+   - 把地址与 token 填进插件设置页（见第 3 步）。
+3. **配置插件**：**DSH 设置 → 插件 → 「大肥鱼」标签页**（插件自带设置面板，保存即热更新），填：
+   - OneBot 地址/token、主人 QQ 号、LLM 的 baseUrl + API Key + 模型（**不填聊天会失败**）；
+   - 表情包目录、语音引擎（可选）、主动聊天时间窗、B站 @ 昵称等。
+4. **B站**：进「刷B站」设置页 → 装主依赖 + 扫码登录（选「记住我」）。
+5. **表情包**：往设置页配置的目录里放图（按情绪建子文件夹效果最好，可选 tags.json）。
+6. **语音**：发语音默认开（走 Harness 转写）；回语音选 TTS 引擎（Piper 需下载模型，见 `lib/voice/README.md`）。
 
 ## 命令（QQ 里发）
 
@@ -47,9 +48,10 @@ DSH 插件（host bundle）。QQ 侧通过 **OneBot 11（NapCat）** 接入，
 
 ```
 ├── index.js            # 插件入口（apply + Config schema）
+├── client.js           # 设置面板（设置 → 插件 → 大肥鱼，settings.plugins.tab 插槽）
 ├── cordis.patch.yml    # bundle 挂载声明
-├── lib/                # 公共层 + 各业务模块（onebot/chat/memory/voice/sticker/proactive/bili）
-├── test/               # node:test 测试（185 个，含 mock NapCat 的端到端闭环）
+├── lib/                # 公共层 + 各业务模块（onebot/chat/memory/voice/sticker/proactive/bili/ui-api）
+├── test/               # node:test 测试（199 个，含 mock NapCat 的端到端闭环）
 ├── docs/               # test-cases.json + test-cases.xlsx（测试用例 Excel）
 ├── scripts/gen_testcases.py  # 从 JSON 重建 Excel
 ├── locale/             # 本地化（zh/en）
@@ -62,7 +64,7 @@ DSH 插件（host bundle）。QQ 侧通过 **OneBot 11（NapCat）** 接入，
 # 装依赖（用工作区自带的 Node/pnpm）
 node /path/to/pnpm.mjs install
 
-# 跑全部测试（185 个；模块测试 + mock NapCat/LLM 的端到端测试）
+# 跑全部测试（199 个；模块测试 + mock NapCat/LLM 的端到端测试）
 node --test
 ```
 
@@ -71,6 +73,7 @@ node --test
 
 ## 常见问题
 
+- **设置页在哪**：DSH 设置 → 插件 → 「大肥鱼」标签页（插件自带面板，保存即热更新）。
 - **插件一直打印「断线重连」**：NapCat 没开或地址不对。配置好 NapCat 前属正常，不会影响其他功能。
 - **聊天回复「鱼鱼走神了」软文案**：LLM 配置错了（key/baseUrl/model），看日志 `logs/llm.log`。
 - **收到语音回「没听清」**：Harness 转写服务未就绪/不支持该音频格式。

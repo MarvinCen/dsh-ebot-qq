@@ -135,6 +135,15 @@
     ["TC-E2E-006", "端到端", "语音回复闭环", "mode=on + 云端 TTS", "发文字", "回复含 record 段（base64 音频）", ""],
     ["TC-E2E-007", "端到端", "权限隔离", "owner.qq=111", "陌生人 999 发消息", "不产生任何回复/API 调用", ""],
     ["TC-E2E-008", "端到端", "卸载收摊", "运行中", "执行 cleanup 链", "连接关闭，不再重连", ""],
-    ["TC-E2E-009", "端到端", "日志落地", "真实 apply", "启动", "插件家目录 logs/app.log 出现「已挂载」", ""]
+    ["TC-E2E-009", "端到端", "日志落地", "真实 apply", "启动", "插件家目录 logs/app.log 出现「已挂载」", ""],
+    ["TC-UI-001", "设置面板", "同源检查", "各 Host/Origin 组合", "sameOriginOk(host, origin, referer)", "loopback 无 Origin 放行；同源放行；外部 Origin 与非 loopback Host 拒绝；同机不同端口拒绝", ""],
+    ["TC-UI-002", "设置面板", "读取配置", "settings 服务正常", "GET /api/ebot-qq/config", "返回默认值合并后的配置、secret 状态（set 布尔）、revision", ""],
+    ["TC-UI-003", "设置面板", "保存配置", "patch 合法", "POST /api/ebot-qq/config", "走 settings.update(ns, patch, revision) 热更新，返回 ok", ""],
+    ["TC-UI-004", "设置面板", "保存校验失败", "patch 含非法值（url=ftp://…）", "POST", "回 400 + 逐字段 errors；不写 settings", "EBOT-CFG-URL"],
+    ["TC-UI-005", "设置面板", "保存冲突", "settings.update 抛 SETTINGS_CONFLICT", "POST", "回 409 + conflict 标记，提示刷新重试", ""],
+    ["TC-UI-006", "设置面板", "服务缺失与坏输入", "settings 缺失 / patch 非对象", "GET/POST", "GET 返回 ok:false；POST 返回 ok:false 不写", ""],
+    ["TC-UI-007", "设置面板", "信任栅栏", "connection.requestRejection 拒绝", "任意请求", "回拒绝码（401/403），不进业务", ""],
+    ["TC-UI-008", "设置面板", "路由分发", "各方法与路径", "GET/POST/未知路径", "200/400/409/404 状态码正确", ""],
+    ["TC-UI-009", "设置面板", "面板注册", "client.js 加载", "settings.plugins.tab 注册（id=ebot-qq, label=大肥鱼）", "设置 → 插件 分区出现「大肥鱼」标签页，表单可读写配置", ""]
   ]
 }

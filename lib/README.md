@@ -7,6 +7,7 @@
 | `logger.mjs` | 日志（AGENTS.md 规则 13） | 一个分类一个文件、级别过滤、2MB 轮转、同步落盘，详见 [logger.mjs](./logger.mjs) 头部注释 |
 | `config.mjs` | 配置默认值 + 合并 + 校验 | `DEFAULT_CONFIG` 与 `index.js` 的 `Config`（schemastery）两份描述由 [test/schema-contract.test.mjs](../test/schema-contract.test.mjs) 保证一致 |
 | `state.mjs` | 家目录 / JSON 读写 / 日期时间工具 | 家目录统一为 `<DSH_HOME>/ebot-qq/`，测试里传空 ctx 也可用 |
+| `ui-api.mjs` | 设置面板后端 `/api/ebot-qq/config` | 读 settings.describe（纯值+secret 状态）、写 settings.update（热更新）；信任栅栏 + 本机同源；400 校验错误 / 409 冲突 |
 
 ## 装配清单（index.js 的 apply 会按此顺序接入）
 
@@ -20,5 +21,6 @@
 | 5 | `sticker/`（表情包索引与匹配） | ✅ 已完成 |
 | 6 | `proactive/`（主动聊天调度） | ✅ 已完成 |
 | 7 | `bili/`（复用 dsh-bili-scroll：配置同步 + 日报通知） | ✅ 已完成 |
+| 8 | `ui-api.mjs` + `client.js`（设置面板：设置 → 插件 → 大肥鱼） | ✅ 已完成 |
 
 每个业务模块目录下都会有自己的 README.md。
